@@ -72,12 +72,16 @@ class Brain(VisionDataset):
         label = self.labels[self.stride*index]
 
         if self.coord_set in ['talairach_slice']:
-            img = fs.Image.read(image).data[None]
-            target = fs.Image.read(label).data[None]
+            img = np.asarray(nib.load(image).dataobj, dtype=np.float32)[None] #fs.Volume.read(image).data[None]
+            target = np.asarray(nib.load(label).dataobj, dtype=np.int8)[None] #fs.Volume.read(label).data[None]
+            # img = fs.Image.read(image).data[None]
+            # target = fs.Image.read(label).data[None]
             
         if self.coord_set in ['talairach', '']:
-            img = fs.Volume.read(image).data[None]
-            target = fs.Volume.read(label).data[None]
+            img = np.asarray(nib.load(image).dataobj, dtype=np.float32)[None] #fs.Volume.read(image).data[None]
+            target = np.asarray(nib.load(label).dataobj, dtype=np.int8)[None] #fs.Volume.read(label).data[None]
+            # img = fs.Volume.read(image).data[None]
+            # target = fs.Volume.read(label).data[None]
 
         if self.transforms is not None:
             img, target = self.transforms(img, target, cpu=cpu, gpu=gpu)
