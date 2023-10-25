@@ -5,7 +5,7 @@ import random
 import torch
 import torch.nn as nn
 import numpy as np
-import freesurfer as fs
+#import freesurfer as fs
 import nibabel as nib
 from . import transforms
 from . import brain3d_svr

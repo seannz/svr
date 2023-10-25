@@ -5,7 +5,8 @@ import random
 import torch
 import torch.nn as nn
 import numpy as np
-import freesurfer as fs
+#import freesurfer as fs
+import nibabel as nib
 from . import transforms
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from torchvision.transforms import ToPILImage
@@ -18,7 +19,8 @@ class Brain(VisionDataset):
             self,
             root: str,
             image_set: str = 'train',
-            label_set: str = 'aseg_4',
+          #  label_set: str = 'aseg_4',
+            label_set: str = 'seg_4',
             split: str = '',
             coord_set: str = 'talairach_slice',
             normalize: str = 'orig',
@@ -35,15 +37,16 @@ class Brain(VisionDataset):
         image_sets = ['train', 'test', 'validate',  'validate-set-100',  'validate-set-abide2',  'validate-set-adni15t',
                       'validate-set-adni3t',  'validate-set-gsp',  'validate-set-mcic',  'validate-set-ppmi',  'validate-set-ukbio',
                       'buckner39']
-        label_sets = ['aseg', 'aseg_23', 'aseg_32', 'aseg_4', 'mseg', 'mseg_32']
+        #label_sets = ['aseg', 'aseg_23', 'aseg_32', 'aseg_4', 'seg_4', 'mseg', 'mseg_32']
+        self.label_set =  'seg4' #ADDED
         coord_sets = ['', 'talairach_slice', 'talairach']
         normalizes = ['orig', 'norm']
         self.image_set = image_set #verify_str_arg(image_set, 'image_set', image_sets)
-        self.label_set = verify_str_arg(label_set, 'label_set', label_sets)
+      #  self.label_set = verify_str_arg(label_set, 'label_set', label_sets)
         self.coord_set = verify_str_arg(coord_set, 'coord_set', coord_sets)
         self.normalize = verify_str_arg(normalize, 'normalize', normalizes)
-        self.image_file = '%s.mgz' % self.normalize if self.coord_set == '' else '%s_%s.mgz' % (self.normalize, self.coord_set)
-        self.label_file = '%s.mgz' % self.label_set if self.coord_set == '' else '%s_%s.mgz' % (self.label_set, self.coord_set)
+        self.image_file = '%s.nii.gz' % self.normalize if self.coord_set == '' else '%s_%s.mgz' % (self.normalize, self.coord_set)
+        self.label_file = '%s.nii.gz' % self.label_set if self.coord_set == '' else '%s_%s.mgz' % (self.label_set, self.coord_set)
         self.split = split
         self.stride = stride
         self.out_shape = out_shape
@@ -51,6 +54,8 @@ class Brain(VisionDataset):
         self.numclass = numclass
         self.maxitems = maxitems
         self.weights = weights
+       # print("in brain.py!")
+       # print(self.transforms)
 
         with open(os.path.join('./datasets', image_set), 'r') as f:
             path_names = [p.strip() for p in f.readlines()]
@@ -58,8 +63,8 @@ class Brain(VisionDataset):
         path_names = [p for p in path_names if p.lower().startswith(split)] if isinstance(split, str) else path_names
         path_names = [path_names[i] for i in self.split] if isinstance(split, list) else path_names
 
-        self.images = [os.path.join(self.root, 'cleaned', p, self.image_file) for p in path_names]
-        self.labels = [os.path.join(self.root, 'cleaned', p, self.label_file) for p in path_names]
+        self.images = [os.path.join(self.root, p, self.image_file) for p in path_names]
+        self.labels = [os.path.join(self.root, p, self.label_file) for p in path_names]
 
     def __getitem__(self, index: int, cpu=True, gpu=False) -> Tuple[Any, Any]:
         """
@@ -84,7 +89,14 @@ class Brain(VisionDataset):
             # target = fs.Volume.read(label).data[None]
 
         if self.transforms is not None:
+            img2 = img.copy()
+            target2 = target.copy()
             img, target = self.transforms(img, target, cpu=cpu, gpu=gpu)
+           # print(img.shape)
+           # print(torch.equal( torch.tensor(img2),img))
+          #  print(torch.equal( torch.tensor(target2),target))
+
+           # img, target = self.transforms(img, img, cpu=cpu, gpu=gpu)
 
         return img, target, index
 
@@ -174,6 +186,59 @@ def brain2d_svr(root='../BRAIN', label_set='aseg_32', coord_set='talairach_slice
     extra = Brain(root, image_set=extra_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg_32', numinput=numinput, numclass=numclass, **kwargs)
 
     return train, valid, tests
+    
+def brain2d_svr_one(root='/data/vision/polina/users/mfirenze/oasis', label_set='aseg', coord_set='', test_subset='train-1', normalize='orig',
+            train_set='train-1', valid_set='train-1', tests_set='train-1', extra_set='train-1', **kwargs):
+    newlabels =   [0,1,2,3,0,0,4,5,6,7,8,0,9,10,0,0,0,0,0,1,2,3,0,0,4,5,6,7,10,0,0,0,0]
+    numclass = 1 + max(newlabels)
+    numinput = 1
+    trainformer = transforms.Compose([transforms.ToTensor3d(), transforms.ReplaceLabels(newlabels), transforms.OneHotLabels(numclass), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=4)])
+    transformer = transforms.Compose([transforms.ToTensor3d(), transforms.ReplaceLabels(newlabels), transforms.OneHotLabels(numclass), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=4)])
+    train = Brain(root, image_set=train_set, transforms=trainformer, coord_set=coord_set, normalize=normalize, label_set=label_set, numinput=numinput, numclass=numclass, **kwargs)
+    valid = Brain(root, image_set=valid_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg_32', numinput=numinput, numclass=numclass, **kwargs)
+    tests = Brain(root, image_set=tests_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg_32', numinput=numinput, numclass=numclass, **kwargs)
+    extra = Brain(root, image_set=extra_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg_32', numinput=numinput, numclass=numclass, **kwargs)
+
+    return train, valid, tests
+
+
+def brain2d_svr_none(root='/data/vision/polina/users/mfirenze/oasis', label_set='aseg', coord_set='', test_subset='train-1', normalize='orig',
+            train_set='train-1', valid_set='train-1', tests_set='train-1', extra_set='train-1', **kwargs):
+    newlabels =   [0,1,2,3,0,0,4,5,6,7,8,0,9,10,0,0,0,0,0,1,2,3,0,0,4,5,6,7,10,0,0,0,0]
+    numclass = 1 + max(newlabels)
+    numinput = 1
+    trainformer = transforms.Compose([transforms.ToTensor3d()])
+    transformer = transforms.Compose([transforms.ToTensor3d()])
+    train = Brain(root, image_set=train_set, transforms=trainformer, coord_set=coord_set, normalize=normalize, label_set=label_set, numinput=numinput, numclass=numclass, **kwargs)
+    valid = Brain(root, image_set=valid_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg_32', numinput=numinput, numclass=numclass, **kwargs)
+    tests = Brain(root, image_set=tests_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg_32', numinput=numinput, numclass=numclass, **kwargs)
+    extra = Brain(root, image_set=extra_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg_32', numinput=numinput, numclass=numclass, **kwargs)
+
+    return train, valid, tests
+
+# train on small oasis dataset
+def brain3d_svr_one(root='/data/vision/polina/users/mfirenze/oasis', label_set='aseg', coord_set='', test_subset='train-1', normalize='orig', slice=1, spacing=2, subsample=2, train_set='train-1', valid_set='train-1', tests_set='train-1', extra_set='train-1', **kwargs):
+    trainformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, subsample=subsample, slice=slice)], gpuindex=1)
+    transformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, subsample=subsample, slice=slice, augment=False)], gpuindex=1)
+    testsformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, subsample=subsample, slice=slice, augment=False)], gpuindex=1)
+
+    train = Brain(root, image_set=train_set, transforms=trainformer, coord_set=coord_set, normalize=normalize, label_set='aseg', numinput=1, numclass=8, **kwargs)
+    valid = Brain(root, image_set=valid_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg', numinput=1, numclass=8, **kwargs)
+    tests = Brain(root, image_set=tests_set, transforms=testsformer, coord_set=coord_set, normalize=normalize, label_set='aseg', numinput=1, numclass=8, **kwargs)
+
+    return train, valid, tests
+
+#train without transformation
+def brain3d_svr_none(root='/data/vision/polina/users/mfirenze/oasis', label_set='aseg', coord_set='', test_subset='train-1', normalize='orig', slice=1, spacing=2, subsample=2, train_set='train-1', valid_set='train-1', tests_set='train-1', extra_set='train-1', **kwargs):
+    trainformer = transforms.Compose([transforms.ToTensor3d()])
+    transformer = transforms.Compose([transforms.ToTensor3d()])
+    testsformer = transforms.Compose([transforms.ToTensor3d()])
+
+    train = Brain(root, image_set=train_set, transforms=trainformer, coord_set=coord_set, normalize=normalize, label_set='aseg', numinput=1, numclass=8, **kwargs)
+    valid = Brain(root, image_set=valid_set, transforms=transformer, coord_set=coord_set, normalize=normalize, label_set='aseg', numinput=1, numclass=8, **kwargs)
+    tests = Brain(root, image_set=tests_set, transforms=testsformer, coord_set=coord_set, normalize=normalize, label_set='aseg', numinput=1, numclass=8, **kwargs)
+
+    return train, valid, tests
 
 def brain2d_reg(root='../BRAIN', label_set='mseg_32', coord_set='talairach_slice', test_subset='test-200', normalize='norm',
             train_set='train-buckner39', valid_set='validate-100', tests_set='tests-500', extra_set='extra-1000', target='flow', **kwargs):
@@ -230,6 +295,19 @@ def brain3d0_4_svr(*args, **kwargs):
 
 def brain3d111_4_svr(*args, **kwargs):
     return brain3d_svr(slice=[1,1], spacing=4, subsample=2)
+
+
+def brain3d111_4_svr_one(*args, **kwargs):
+    return brain3d_svr_one(slice=[1,1], spacing=4, subsample=2)
+
+def brain3d111_4_svr_none(*args, **kwargs):
+    return brain3d_svr_none(slice=[1,1], spacing=4, subsample=2)
+
+def brain2d111_4_svr_one(*args, **kwargs):
+    return brain2d_svr_one(slice=[1,1], spacing=4, subsample=2)
+
+def brain2d111_4_svr_none(*args, **kwargs):
+    return brain2d_svr_none(slice=[1,1], spacing=4, subsample=2)
 
 def brain3d111_4_1_svr(*args, **kwargs):
     return brain3d_svr(slice=[1,1], spacing=4, subsample=1)
@@ -415,3 +493,4 @@ def brain2d_denoiser(root='../BRAIN', label_set='aseg_32', coord_set='talairach_
     tests = Brain(root, image_set='validate-100', transforms=transformer, coord_set=coord_set, normalize=normalize, label_set=label_set, numinput=numinput, numclass=numclass)
 
     return train, valid, tests
+
