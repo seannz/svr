@@ -111,9 +111,9 @@ if __name__ == "__main__":
 
 
     # SAVE VOLUMES
-    imageio.volwrite('input_test.tif', input[0,0,0,:,:,:])
-    imageio.volwrite('gtruth_test.tif', truth[0,0,:,:,:])
-    imageio.volwrite('predicted_test.tif',splat.detach().numpy()[0,0,:,:,:] )
+    #imageio.volwrite('input_test.tif', input[0,0,0,:,:,:])
+    #imageio.volwrite('gtruth_test.tif', truth[0,0,:,:,:])
+    #imageio.volwrite('predicted_test.tif',splat.detach().numpy()[0,0,:,:,:] )
     print("done evaluation")
     args.test = True
 
