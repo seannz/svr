@@ -46,6 +46,39 @@ class Flow_SNet(nn.Module):
 
         return torch.stack(flow.flip(1).split(1,0), 2)
 
+    def compensate(self, out, tar):
+        batch, chans, *size = out.shape
+        grid = torch.stack(torch.meshgrid([torch.arange(1., s + 1., device=out.device) for s in size], indexing='ij'))
+        mask = tar[:,chans:] # if masked else torch.ones_like(tar[:,chans:])
+        
+        B = (out[:,:chans].flip(1) + grid).masked_select(mask.bool()).reshape(batch, chans, -1) #.transpose(1,2)
+        A = (tar[:,:chans].flip(1) + grid).masked_select(mask.bool()).reshape(batch, chans, -1) #.transpose(1,2)
+        
+        mean_B = B.mean(-1, keepdim=True).detach()
+        mean_A = A.mean(-1, keepdim=True).detach()
+        X = torch.linalg.svd(torch.linalg.lstsq((B - mean_B).transpose(1,2), (A - mean_A).transpose(1,2)).solution.detach())
+        R = (X.U @ X.S.sign().diag_embed() @ X.Vh).transpose(1,2)
+
+        out = out.flip(1) + grid - mean_B.unflatten(-1,[1,1,1])
+        out = (R @ out.flatten(2)).unflatten(2, out.shape[2:])
+        out = (out - grid + mean_A.unflatten(-1,[1,1,1])).flip(1)
+
+        return out
+
+    def upsample_flow(self, stack):
+        stack = stack.squeeze(0) #[0,:,0]
+        stack = stack.movedim(1 + self.slice, 0).unflatten(0, [-1, self.spacing]).movedim(1,-1)
+        shape = [self.spacing * s + 1 for s in stack.shape[-3:]]
+        
+        stack = torch.cat([stack, stack[...,:1].lerp(stack[...,1:], 2.0)], -1)
+        stack = torch.nn.functional.pad(stack, (0,0,0,1,0,1))
+        stack = torch.nn.functional.interpolate(stack, size=shape, mode='trilinear', align_corners=True)
+        
+        stack = stack[...,:-1,:-1,:-1].movedim(-1,1).flatten(0,1).movedim(0, 1 + self.slice)
+        stack = stack.unsqueeze(0)
+        
+        return self.spacing * stack
+
     def project(self, pred, mask):
         batch, chans, *size = pred.shape
         ones = torch.ones([1] + size, dtype=pred.dtype, device=pred.device) #_like(grid[0])])
