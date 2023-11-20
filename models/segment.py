@@ -26,6 +26,8 @@ class Segment(pl.LightningModule):
         self.train_outputs = []
         self.valid_outputs = []
 
+       
+
     def training_step(self, batch, batch_idx):
         inputs, targets, indices = *self.train_data.transforms(batch[0], batch[1], cpu=False, gpu=True), batch[2]
 

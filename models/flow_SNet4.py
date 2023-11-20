@@ -2,6 +2,8 @@ import math
 import torch
 import torch.nn as nn
 from .flow_UNetS import Flow_UNet
+import imageio
+import pdb
 
 class Flow_SNet(nn.Module):
     def __init__(self, *args, X=3, slice=1, spacing=1, drop=0, **kwargs):
@@ -21,25 +23,48 @@ class Flow_SNet(nn.Module):
         self.strides = [self.unet3.enc_blocks[d].pool_stride for d in range(len(self.unet3.enc_blocks))]
 
     def forward(self, x):
-        xs = torch.cat(x.unbind(2), 0)
+
+        # initially (1, 1, 1, 128, 128, 128)
+        xs = torch.cat(x.unbind(2), 0) # could also do x[0,:,:,:,:,:]
         skips = [None] * len(self.unet3.enc_blocks)
         sizes = [list(xs.shape[2:])] * len(self.unet3.enc_blocks)
-
+       # pdb.set_trace()
+        count = 0 
         for d in range(len(self.unet3.enc_blocks)):
-            skips[d] = xs = self.unets.enc_blocks[d](xs)
+            skips[d] = xs = self.unets.enc_blocks[d](xs) # save for future skip layer
+           # pdb.set_trace()
             sizes[d] = [sizes[d - 1][i] // self.strides[d][i] for i in range(len(self.strides[d]))]
+            count = count +1
 
+       
+        
         flow = torch.zeros([xs.shape[0], xs.ndim - 2] + list(xs.shape[2:]), device=xs.device)
         mask = torch.ones([xs.shape[0], 1] + list(xs.shape[2:]), device=xs.device)
         x3 = torch.zeros([1, xs.shape[1]] + sizes[-1], device=xs.device)
-
+       # pdb.set_trace()
         for u in reversed(range(len(self.unet3.dec_blocks))):
+            #xs - slice stack, x3 - 3D volume, xw - estimate of slice stack xs'
+            # upconvolution of 2d features with skip connection 
             xs = self.unets.dec_blocks[u](xs, skips[u])
+            
+           # print(xs.detach().cpu().numpy().shape)
+
+            # estimate 3d volume, using previous flow and stack
             splat = self.unet3.splat(skips[u], flow, mask=torch.ones_like(mask), shape=sizes[u]).sum(axis=0, keepdim=True)
+             # normalize splat to avoid overflow
+
             splat = splat[:,:-1] / (splat[:,-1:].max().item()) # normalize #splat[:,-1:].max().item() 
+
+            # upconvolution of  3d features (???)
             x3 = self.unet3.dec_blocks[u](x3, splat)
+           
+            #slice 3d volume with flow to estimate slice stack // warp -> slice
             xw = self.unet3.warp(self.unet3.interp(torch.cat([x3], 1).expand([xs.shape[0]] + [-1] * 4), list(xs.shape[2:])), flow)
+            
+            # refine the motion, find difference of xs' and xs and add to previous flow
             flow, mask = self.unets.flow_add(flow, self.unets.flo_blocks[u](torch.cat([xs, xw], 1)))
+           # pdb.set_trace()
+  
 
         if self.rigid:
             flow = self.project(flow, mask)

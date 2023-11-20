@@ -36,7 +36,7 @@ import imageio
 if __name__ == "__main__":
 
 
-    print("running!")
+    print("running! :)")
     parser = argparse.ArgumentParser()
     parser = Trainer.add_argparse_args(parser) #intializes default parameters from trainer
     parser = options.set_argparse_defs(parser)
@@ -84,8 +84,8 @@ if __name__ == "__main__":
 
     # LOAD MODEL
    # trainee = models.segment(model=models.flow_SNet3d1_256_4())
-    print(torch.load('./checkpoints/brain3d111_4_svr_one_flow_SNet3d1_256_4_l2_loss_bulktrans05_bulkrot45_trans10_rot20_250k_nobound_nosine_nomask_2stacks/last.ckpt').keys())
-    trainee.load_state_dict(torch.load('./checkpoints/brain3d111_4_svr_one_flow_SNet3d1_256_4_l2_loss_bulktrans05_bulkrot45_trans10_rot20_250k_nobound_nosine_nomask_2stacks/last-v1.ckpt')['state_dict'])
+    print(torch.load('./checkpoints/brain3d111_4_svr_one_flow_SNet3d1_256_4_l2_loss_bulktrans05_bulkrot45_trans10_rot20_250k_nobound_nosine_nomask_2stacks/last-v15.ckpt').keys())
+    trainee.load_state_dict(torch.load('./checkpoints/brain3d111_4_svr_one_flow_SNet3d1_256_4_l2_loss_bulktrans05_bulkrot45_trans10_rot20_250k_nobound_nosine_nomask_2stacks/last-v15.ckpt')['state_dict'])
     model = trainee.model
     model.eval()
     print(args.log_every_n_steps)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
     #GET OUTPUT FOR ONE EXAMPLE
     sets = datasets.brain3d111_4_svr_one(subsample=1) #<-- instantiate dataset with no subsampling (=1) as we will do that ourselves
-    imgnum=1 # pick any image num
+    imgnum=10 # pick any image num
     item = sets[1].__getitem__(imgnum, gpu=True)
     mask = item[1][None][:,-1:,0]
     true = sets[1].__getitem__(imgnum, gpu=False)
@@ -111,14 +111,12 @@ if __name__ == "__main__":
 
 
     # SAVE VOLUMES
-    #imageio.volwrite('input_test.tif', input[0,0,0,:,:,:])
-    #imageio.volwrite('gtruth_test.tif', truth[0,0,:,:,:])
-    #imageio.volwrite('predicted_test.tif',splat.detach().numpy()[0,0,:,:,:] )
+    imageio.volwrite('last_input_test_50_5.tif', input[0,0,0,:,:,:])
+    imageio.volwrite('last_gtruth_test_50_5.tif', truth[0,0,:,:,:])
+    imageio.volwrite('v15_predicted.tif',splat.detach().numpy()[0,0,:,:,:] )
     print("done evaluation")
     args.test = True
 
     # GET OVERALL LOSS
     if args.test:
         trainer.test(trainee, tests_loader, verbose=True) #used to be False
-
-

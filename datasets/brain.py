@@ -13,6 +13,7 @@ from torchvision.transforms import ToPILImage
 from torchvision.transforms.functional import to_tensor
 from torchvision.datasets.vision import VisionDataset
 from torchvision.datasets.utils import verify_str_arg
+import imageio
 
 class Brain(VisionDataset):
     def __init__(
@@ -92,11 +93,6 @@ class Brain(VisionDataset):
             img2 = img.copy()
             target2 = target.copy()
             img, target = self.transforms(img, target, cpu=cpu, gpu=gpu)
-           # print(img.shape)
-           # print(torch.equal( torch.tensor(img2),img))
-          #  print(torch.equal( torch.tensor(target2),target))
-
-           # img, target = self.transforms(img, img, cpu=cpu, gpu=gpu)
 
         return img, target, index
 
@@ -217,7 +213,7 @@ def brain2d_svr_none(root='/data/vision/polina/users/mfirenze/oasis', label_set=
     return train, valid, tests
 
 # train on small oasis dataset
-def brain3d_svr_one(root='/data/vision/polina/users/mfirenze/oasis', label_set='aseg', coord_set='', test_subset='train-1', normalize='orig', slice=1, spacing=2, subsample=2, train_set='train-1', valid_set='train-1', tests_set='train-1', extra_set='train-1', **kwargs):
+def brain3d_svr_one(root='/data/vision/polina/users/mfirenze/oasis', label_set='aseg', coord_set='', test_subset='train-1', normalize='orig', slice=1, spacing=2, subsample=2, train_set='train-mf', valid_set='val-mf', tests_set='test-mf', extra_set='train-1', **kwargs):
     trainformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, subsample=subsample, slice=slice)], gpuindex=1)
     transformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, subsample=subsample, slice=slice, augment=False)], gpuindex=1)
     testsformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, subsample=subsample, slice=slice, augment=False)], gpuindex=1)
@@ -227,6 +223,9 @@ def brain3d_svr_one(root='/data/vision/polina/users/mfirenze/oasis', label_set='
     tests = Brain(root, image_set=tests_set, transforms=testsformer, coord_set=coord_set, normalize=normalize, label_set='aseg', numinput=1, numclass=8, **kwargs)
 
     return train, valid, tests
+
+
+
 
 #train without transformation
 def brain3d_svr_none(root='/data/vision/polina/users/mfirenze/oasis', label_set='aseg', coord_set='', test_subset='train-1', normalize='orig', slice=1, spacing=2, subsample=2, train_set='train-1', valid_set='train-1', tests_set='train-1', extra_set='train-1', **kwargs):
@@ -299,6 +298,8 @@ def brain3d111_4_svr(*args, **kwargs):
 
 def brain3d111_4_svr_one(*args, **kwargs):
     return brain3d_svr_one(slice=[1,1], spacing=4, subsample=2)
+
+
 
 def brain3d111_4_svr_none(*args, **kwargs):
     return brain3d_svr_none(slice=[1,1], spacing=4, subsample=2)

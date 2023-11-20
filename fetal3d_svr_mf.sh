@@ -1,7 +1,7 @@
 #/bin/bash -x
 cat "$0" >&2 
-model="flow_SNet3d1_256_4" #"flow_SNet3d1_4_noin" # "flow_UNet2d" #"flow_UNet2d"
-
+model="flow_SNet3d1_192_4" #"flow_SNet3d1_4_noin" # "flow_UNet2d" #"flow_UNet2d"
+# originally  was flow_SNet3d1_32
 loss="l2_loss"
 denoiser="nothing"
 postfilt="nothing"
@@ -14,7 +14,7 @@ seed=0
 log_every_n_steps=5
 printf "hello"
 max_epochs = 50 #issue with this, have to manually input number below instead of variable
-dataset="brain3d111_4_svr_one"
+dataset="feta3d1_4_svr_mf"
 echo "(GPU $gpu) seed: $seed, launching batch_size: $batch_size, theta: $theta, mu: $mu, drop: $drop"
 remarks="$dataset"_"$model"_"$loss"_bulktrans05_bulkrot45_trans10_rot20_250k_nobound_nosine_nomask_2stacks #unmasked_pe_trans_random_zoom #_no_skip
 echo "hello1"
