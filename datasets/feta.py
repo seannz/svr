@@ -186,11 +186,11 @@ def feta3d_svr(root='../feta_2.1_lia', slice=0, spacing=4, subsample=2, **kwargs
     atlasformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.Subsample3d()], gpuindex=1)
 
     train = FeTA(root, image_set='train', multiply=5, transforms=trainformer, **kwargs)
-    valid = FeTA(root, image_set='val',   transforms=transformer, **kwargs)
+    valid = FeTA(root, image_set='val',   multiply=8, transforms=transformer, **kwargs)
     tests = FeTA(root, image_set='val',   transforms=testsformer, **kwargs)
     extra = CRL(root='../CRL_FetalBrainAtlas_2017v3_lia', image_set='train', multiply=30, transforms=trainformer, **kwargs)
 
-    return train, valid, tests
+    return pairset.Sumset(train,extra), valid, tests
 
 def feta3d0_svr(**kwargs):
     return feta3d_svr(slice=0)
