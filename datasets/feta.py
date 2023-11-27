@@ -179,16 +179,16 @@ class MIAL(FeTA):
         self.images = [os.path.join(self.root, p, 'anat', self.image_file % (p, r)) for r in runs for p in path_names]
         self.labels = [os.path.join(self.root, 'derivatives', 'manual_masks', p, 'anat', self.label_file % (p, r)) for r in runs for p in path_names]
 
-def feta3d_svr(root='../feta_2.1_reg', slice=1, spacing=2, subsample=2, **kwargs):
-    trainformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, zooms=-0.1, subsample=subsample, slice=slice)], gpuindex=1)
-    transformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, zooms=-0.1, subsample=subsample, slice=slice, augment=False)], gpuindex=1)
-    testsformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, zooms=-0.1, subsample=subsample, slice=slice, augment=False)], gpuindex=1)
+def feta3d_svr(root='../feta_2.1_lia', slice=0, spacing=4, subsample=2, **kwargs):
+    trainformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, zooms=(-0.1, 0.1), subsample=subsample, slice=slice)], gpuindex=1)
+    transformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, zooms=(-0.1, 0.1), subsample=subsample, slice=slice, augment=False)], gpuindex=1)
+    testsformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, zooms=(-0.1, 0.1), subsample=subsample, slice=slice, augment=False)], gpuindex=1)
     atlasformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.Subsample3d()], gpuindex=1)
 
     train = FeTA(root, image_set='train', multiply=5, transforms=trainformer, **kwargs)
     valid = FeTA(root, image_set='val',   transforms=transformer, **kwargs)
     tests = FeTA(root, image_set='val',   transforms=testsformer, **kwargs)
-    extra = CRL(root='../CRL_FetalBrainAtlas_2017v3_reg', image_set='train', multiply=30, transforms=trainformer, **kwargs)
+    extra = CRL(root='../CRL_FetalBrainAtlas_2017v3_lia', image_set='train', multiply=30, transforms=trainformer, **kwargs)
 
     return train, valid, tests
 
