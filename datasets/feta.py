@@ -7,6 +7,7 @@ import torch.nn as nn
 import numpy as np
 #import freesurfer as fs
 import nibabel as nib
+from . import pairset
 from . import transforms
 from . import brain3d_svr
 from PIL import Image
