@@ -5,12 +5,9 @@ import random
 import torch
 import torch.nn as nn
 import numpy as np
-# import freesurfer as fs
 import nibabel as nib
-# from . import batch_transforms
 from . import pairset
 from . import transforms
-# from . import brain3d_svr
 from PIL import Image
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from torchvision.transforms import ToPILImage
@@ -180,25 +177,6 @@ class MIAL(FeTA):
 
         self.images = [os.path.join(self.root, p, 'anat', self.image_file % (p, r)) for r in runs for p in path_names]
         self.labels = [os.path.join(self.root, p, 'anat', self.label_file % (p, r)) for r in runs for p in path_names]
-
-    # def __getitem__(self, index: int, cpu=True, gpu=False) -> Tuple[Any, Any]:
-    #     """
-    #     Args:
-    #         index (int): Index
-    #     Returns:
-    #         tuple: (image, target) where target is the image segmentation.
-    #     """
-    #     image = self.images[self.stride*index % len(self.images)]
-    #     label = self.labels[self.stride*index % len(self.images)]
-    #     # label = label if os.path.isfile(label) else self.labels[self.stride*index]
-
-    #     img = np.asarray(nib.load(image).dataobj, dtype=np.float32)[None] #fs.Volume.read(image).data[None]
-    #     target = np.asarray(nib.load(label).dataobj, dtype=np.float32)[None] #fs.Volume.read(label).data[None]
-
-    #     if self.transforms is not None:
-    #         img, target = self.transforms(img, target, cpu=cpu, gpu=gpu)
-
-    #     return img, target, index
 
 def feta3d_svr(root='../feta_2.1_mial', slice=1, spacing=2, subsample=2, **kwargs):
     trainformer = transforms.Compose([transforms.ToTensor3d(), transforms.ScaleZeroOne(), transforms.RandAffine3dSlice(spacing=spacing, zooms=(-0.1,0.1), subsample=subsample, slice=slice)], gpuindex=1)
