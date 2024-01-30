@@ -17,7 +17,7 @@ from nilearn.datasets import load_mni152_template
 from nilearn.plotting import plot_img
 import nibabel as nib
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
@@ -421,8 +421,8 @@ class RandAffine3dSlice:
         seg0 = torch.cat([xform[i](seg1).gt(0).float() for i in range(numstacks)], 1)
         # img0 = self.mult(img0) if self.noise else img0
         flow = torch.cat([xform[i].flow.flip(0) for i in range(numstacks)], 1) # 
-        # img0, flow = self.bound(torch.cat([img0, seg0]), torch.cat([flow, seg0]), mask=seg0)
-        img0, flow = torch.cat([img0, seg0]), torch.cat([flow, seg0])
+        img0, flow = self.bound(torch.cat([img0, seg0]), torch.cat([flow, seg0]), mask=seg0)
+        # img0, flow = torch.cat([img0, seg0]), torch.cat([flow, seg0])
         
         return img0, flow
 

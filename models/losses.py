@@ -107,7 +107,11 @@ class MeanL21Loss(LossMetric):
 
 class MeanL21LossInvariant(LossMetric):
     def __init__(self, **kwargs):
-        super().__init__(loss_func=l21_loss_affine_invariant, loss_kwargs={'masked':True})
+        super().__init__(loss_func=l21_loss_affine_invariant, loss_kwargs={'masked':True, 'eps':0})
+
+class MeanL22LossInvariant(LossMetric):
+    def __init__(self, **kwargs):
+        super().__init__(loss_func=l22_loss_affine_invariant, loss_kwargs={'masked':True, 'eps':0})
 
 class MeanRegDiceLoss(LossMetric):
     def __init__(self, **kwargs):
