@@ -346,10 +346,10 @@ class BoundingBox3d:
 
     def __call__(self, img1, seg1, mask):
         nonz = mask.nonzero() # seg1[self.index][None].nonzero()
-        mins = [(ind - 1 * self.spacing).div(self.spacing).int().mul(self.spacing).int() for ind in nonz.min(0).values[-3:]]
+        mins = [(ind - 8 * self.spacing).div(self.spacing).int().mul(self.spacing).int() for ind in nonz.min(0).values[-3:]]
         mins = torch.tensor(mins).clamp(torch.tensor([0,0,0]), torch.tensor(img1.shape[-3:]))
 
-        maxs = [(ind + 1 * self.spacing).div(self.spacing).int().mul(self.spacing).int() for ind in nonz.max(0).values[-3:]]
+        maxs = [(ind + 8 * self.spacing).div(self.spacing).int().mul(self.spacing).int() for ind in nonz.max(0).values[-3:]]
         maxs = torch.tensor(maxs).clamp(torch.tensor([0,0,0]), torch.tensor(img1.shape[-3:]))
 
         img1 = img1[..., mins[0]:maxs[0], mins[1]:maxs[1], mins[2]:maxs[2]]
