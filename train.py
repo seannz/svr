@@ -90,7 +90,7 @@ if __name__ == "__main__":
  
    # trainer = Trainer.from_argparse_args(args) #, plugins=DDPPlugin(find_unused_parameters=False))#fake
   #  trainer = Trainer.from_argparse_args(args, callbacks=callbacks, logger=logger, gradient_clip_val=0.5, gradient_clip_algorithm='value', precision=16) #, plugins=DDPPlugin(find_unused_parameters=False))
-    trainer = Trainer(log_every_n_steps=args.log_every_n_steps, max_epochs = args.max_epochs) # changed to this to avoid errors
+    trainer = Trainer(log_every_n_steps=args.log_every_n_steps, max_epochs = args.max_epochs, accelerator='gpu', devices=1) 
    # trainer = Trainer()
     
 
