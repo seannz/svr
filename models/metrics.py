@@ -1,6 +1,6 @@
 import torch
 from torchmetrics import Metric
-from losses import *
+from .losses import *
 
 class LossMetric(Metric):
     def __init__(self, loss_func, loss_kwargs={}, **kwargs):
