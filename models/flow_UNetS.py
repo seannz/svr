@@ -1,11 +1,10 @@
-import interpol
 import math
 import torch
-import numpy as np
+import interpol
 from torch import nn
 import torch.nn.functional as F
 
-__all__ = ['Flow_UNet', 'flow_UNet2d', 'flow_UNet2d_postwarp', 'flow_UNet2d_nowarp', 'flow_UNet3d', 'flow_UNet3d_nowarp', 'flow_UNet3d_postwarp']
+__all__ = ['Flow_UNet', 'flow_UNet2d', 'flow_UNet3d']
 
 class InitWeights_He(object):
     def __init__(self, neg_slope=1e-2):
@@ -37,7 +36,7 @@ class ConvTransposeBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, bias=True, norm=True, drop=0.0, relu=True, X=3):
         super().__init__()
         kernel_size = [kernel_size] * X if not isinstance(kernel_size, (list, tuple)) else kernel_size
-        stride = [stride] * X if not instance(stride, (list, tuple)) else stride
+        stride = [stride] * X if not isinstance(stride, (list, tuple)) else stride
         padding = [(kernel_size[i] - 1) // 2 if stride[i] == 1 else 0 for i in range(len(kernel_size))]
         self.norm = eval("nn.InstanceNorm%dd" % X)(out_channels, affine=True) if norm else nn.Identity()
         self.relu = eval("nn.LeakyReLU")() if relu else nn.Identity()
@@ -48,12 +47,44 @@ class ConvTransposeBlock(nn.Module):
         # return self.drop(self.conv(self.relu(self.norm(x))))
         return self.relu(self.norm(self.drop(self.conv(x))))
 
+# class SlabbedConvLayers(nn.Module):
+#     def __init__(self, in_channels, out_channels, num_convs, slab_kernel_sizes=3, conv_kernel_sizes=3,
+#                  slab_stride_sizes=1, conv_stride_sizes=1, pool_stride=1, mask=False, bias=True, norm=True, drop=0.0, relu=True, X=3):
+#         super().__init__()
+#         self.input_channels = in_channels
+#         self.output_channels = out_channels + mask
+#         self.slab_stride_sizes = slab_stride_sizes if isinstance(slab_stride_sizes, (list, tuple)) else [slab_stride_sizes] * X
+#         self.pool_stride = pool_stride if isinstance(pool_stride, (list, tuple)) else [pool_stride] * X
+
+#         self.blocks = []
+#         for i in range(max(0, num_convs - 1)):
+#             stride = slab_stride_sizes if i == 0 else conv_stride_sizes
+#             kernel = slab_kernel_sizes if i == 0 else conv_kernel_sizes
+#             in_channels = self.input_channels #if i == 0 else self.output_channels
+#             out_channels = self.input_channels # self.spacing * self.output_channels if i == num_convs - 1 else self.input_channels
+#             self.blocks.append(ConvBlock(in_channels, out_channels, kernel_size=kernel, stride=stride, bias=bias, norm=norm, drop=drop, relu=relu, X=X))
+
+#         for i in range(max(0, num_convs - 1), num_convs):
+#             stride = slab_stride_sizes
+#             kernel = slab_kernel_sizes
+#             in_channels = self.input_channels # if i == 0 else self.output_channels
+#             out_channels = self.output_channels # if i == num_convs - 1 else self.input_channels
+#             self.blocks.append(ConvTransposeBlock(in_channels, out_channels, kernel_size=kernel, stride=stride, bias=bias, norm=norm, drop=drop, relu=False, X=X))
+
+#         self.blocks = nn.Sequential(*self.blocks)
+
+#     def forward(self, x):
+#         for i in range(len(self.blocks)):
+#             x = self.blocks[i](torch.cat([x], 1))
+
+#         return torch.cat([x[:,:3], x[:,3:].sigmoid()], 1)
+
 class SlabbedConvLayers(nn.Module):
     def __init__(self, in_channels, out_channels, num_convs, slab_kernel_sizes=3, conv_kernel_sizes=3,
-                 slab_stride_sizes=1, conv_stride_sizes=1, pool_stride=1, slice=None, grid=False, mask=False, bias=True, norm=True, drop=0.0, relu=True, X=3):
+                 slab_stride_sizes=1, conv_stride_sizes=1, pool_stride=1, slice=None, mask=False, bias=True, norm=True, drop=0.0, relu=True, X=3):
         super().__init__()
         self.mode = 'bilinear' if X == 2 else 'trilinear' if X == 3 else 'nearest'
-        self.input_channels = in_channels + X * grid
+        self.input_channels = in_channels
         self.output_channels = out_channels + mask
         self.slab_stride_sizes = slab_stride_sizes if isinstance(slab_stride_sizes, (list, tuple)) else [slab_stride_sizes] * X
         self.pool_stride = pool_stride if isinstance(pool_stride, (list, tuple)) else [pool_stride] * X
@@ -167,7 +198,7 @@ class WarpingLayer(nn.Module):
 
 class Flow_UNet(nn.Module):
     def __init__(self, input_channels, base_num_features, num_classes, num_pool, slice=None, num_conv_per_stage=4, num_conv_per_flow=4,
-                 featmul=2, grid=False, mask=False, norm=False, dropout_p=0.0, weightInitializer=InitWeights_He(1e-2), pool_kernel_sizes=2,
+                 featmul=2, mask=False, norm=False, dropout_p=0.0, weightInitializer=InitWeights_He(1e-2), pool_kernel_sizes=2,
                  slab_kernel_sizes=3, conv_kernel_sizes=3, slab_stride_sizes=1, conv_stride_sizes=1, convolutional_pooling=True,
                  normalize_splat=True, convolutional_upsampling=True, max_num_features=None, bias=False, shortcut=True, warp=True, X=3):
 
@@ -202,11 +233,11 @@ class Flow_UNet(nn.Module):
             self.dec_blocks[u + 1] = StackedConvTransposeLayers(in_channels, out_channels, num_conv_per_stage, 
                                                                 conv_kernel_sizes, pool_kernel_sizes, bias=bias, norm=norm, drop=dropout_p, relu=True, X=X)
             self.flo_blocks[u + 1] = SlabbedConvLayers(2 * out_channels, X, num_conv_per_flow, slice=slice, slab_kernel_sizes=slab_kernel_sizes, conv_kernel_sizes=conv_kernel_sizes,
-                                                       slab_stride_sizes=slab_stride_sizes, grid=grid, mask=mask, bias=bias, norm=norm, drop=False, relu=True, X=X)
+                                                       slab_stride_sizes=slab_stride_sizes, mask=mask, bias=bias, norm=norm, drop=False, relu=True, X=X)
 
         self.dec_blocks[0] = StackedConvTransposeLayers(num_features[0], num_classes, num_conv_per_stage, conv_kernel_sizes, 1, bias=bias, norm=norm, drop=dropout_p, relu=True, X=X)
         self.flo_blocks[0] = SlabbedConvLayers(2 * num_classes, X, num_conv_per_flow, slice=slice, slab_kernel_sizes=slab_kernel_sizes, conv_kernel_sizes=conv_kernel_sizes, 
-                                               slab_stride_sizes=slab_stride_sizes, grid=grid, mask=mask, bias=bias, norm=norm, drop=False, relu=True, X=X)
+                                               slab_stride_sizes=slab_stride_sizes, mask=mask, bias=bias, norm=norm, drop=False, relu=True, X=X)
 
         # register all modules properly
         self.dec_blocks = nn.ModuleList(self.dec_blocks)
@@ -247,17 +278,6 @@ class Flow_UNet(nn.Module):
 def flow_UNet2d(input_channels, num_classes, **kwargs):
     return Flow_UNet(input_channels=input_channels, base_num_features=[16, 24, 32, 48, 64, 96, 128, 192, 256, 320], num_classes=2, num_pool=7, X=2)
 
-def flow_UNet2d_postwarp(input_channels, num_classes, **kwargs):
-    return Flow_UNet(input_channels=input_channels, base_num_features=[16, 24, 32, 48, 64, 96, 128, 192, 256, 320], num_classes=2, num_pool=7, X=2)
-
-def flow_UNet2d_nowarp(input_channels, num_classes, **kwargs):
-    return Flow_UNet(input_channels=input_channels, base_num_features=[16, 24, 32, 48, 64, 96, 128, 192, 256, 320], num_classes=2, num_pool=7, warp=False, X=2)
-
 def flow_UNet3d(input_channels, num_classes, **kwargs):
     return Flow_UNet(input_channels=input_channels, base_num_features=[16, 24, 32, 48, 64, 96, 128, 192, 256, 320], num_classes=3, num_pool=6, X=3)
 
-def flow_UNet3d_postwarp(input_channels, num_classes, **kwargs):
-    return Flow_UNet(input_channels=input_channels, base_num_features=[16, 24, 32, 48, 64, 96, 128, 192, 256, 320], num_classes=3, num_pool=6, X=3)
-
-def flow_UNet3d_nowarp(input_channels, num_classes, **kwargs):
-    return Flow_UNet(input_channels=input_channels, base_num_features=[16, 24, 32, 48, 64, 96, 128, 192], num_classes=3, num_pool=6, warp=False, X=3)
