@@ -16,7 +16,7 @@ class Flow_SNet(nn.Module):
         self.spacing = spacing
         self.unets = Flow_UNet(*args, conv_kernel_sizes=conv_kernel_sizes[slice], pool_kernel_sizes=pool_kernel_sizes[slice],
                                slab_kernel_sizes=slab_kernel_sizes[slice], slab_stride_sizes=slab_stride_sizes[slice], 
-                               grid=False, mask=True, dropout_p=drop, slice=slice, num_conv_per_flow=4, X=X, **kwargs)
+                               mask=True, dropout_p=drop, slice=slice, num_conv_per_flow=4, X=X, **kwargs)
         self.unet3 = Flow_UNet(*args, conv_kernel_sizes=3, pool_kernel_sizes=2, mask=True, dropout_p=drop, slice=None, 
                                num_conv_per_flow=0, normalize_splat=False, X=X, **kwargs)
         self.strides = [self.unet3.enc_blocks[d].pool_stride for d in range(len(self.unet3.enc_blocks))]
