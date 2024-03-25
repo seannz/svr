@@ -5,14 +5,12 @@ import torch.nn as nn
 import argparse
 import warnings
 
-import monai
 import models
 import models.losses
 import models.metrics
 import models.optimizers
 import options
 import datasets
-import logging
 
 from torch.utils.data import DataLoader
 from pytorch_lightning import Trainer, seed_everything
