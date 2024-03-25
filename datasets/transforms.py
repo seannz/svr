@@ -23,7 +23,7 @@ class BoundingBox3d:
         self.spacing = spacing / subsample
 
     def __call__(self, img1, seg1, mask):
-        nonz = mask.nonzero() # seg1[self.index][None].nonzero()
+        nonz = mask.nonzero()
         mins = [(ind - 8 * self.spacing).div(self.spacing).int().mul(self.spacing).int() for ind in nonz.min(0).values[-3:]]
         mins = torch.tensor(mins).clamp(torch.tensor([0,0,0]), torch.tensor(img1.shape[-3:]))
 
@@ -37,7 +37,7 @@ class BoundingBox3d:
 
 
 class RandAffine3dSlice:
-    def __init__(self, spacing=1, translations=0.10, rotations=20, bulk_translations=0.05, bulk_rotations=180, zooms=0, subsample=1, slice=1, nodes=(8,16), shots=2, augment=True, noise=False, X=3):
+    def __init__(self, spacing=1, translations=0.10, rotations=20, bulk_translations=0, bulk_rotations=180, zooms=0, subsample=1, slice=1, nodes=(8,16), shots=2, augment=True, noise=False, X=3):
         self.slice = slice if isinstance(slice, (tuple, list)) else [slice]
         # self.crop = cc.fov.PatchTransform(192)
         self.flip = cc.fov.RandomFlipTransform(axes=[-3]) #+ cc.fov.PatchTransform(192)
