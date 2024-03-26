@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from .flow_UNetS import Flow_UNet
 
 class Flow_SNet(nn.Module):
-    def __init__(self, *args, X=3, slice=1, spacing=1, drop=0, **kwargs):
+    def __init__(self, *args, X=3, slice=1, spacing=1, num_conv_per_flow=4, drop=0, **kwargs):
         super().__init__()
         conv_kernel_sizes = [[1,3,3],[3,1,3],[3,3,1]]
         pool_kernel_sizes = [[1,2,2],[2,1,2],[2,2,1]]
@@ -16,7 +16,7 @@ class Flow_SNet(nn.Module):
         self.spacing = spacing
         self.unets = Flow_UNet(*args, conv_kernel_sizes=conv_kernel_sizes[slice], pool_kernel_sizes=pool_kernel_sizes[slice],
                                slab_kernel_sizes=slab_kernel_sizes[slice], slab_stride_sizes=slab_stride_sizes[slice], 
-                               mask=True, dropout_p=drop, slice=slice, num_conv_per_flow=4, X=X, **kwargs)
+                               mask=True, dropout_p=drop, slice=slice, num_conv_per_flow=num_conv_per_flow, X=X, **kwargs)
         self.unet3 = Flow_UNet(*args, conv_kernel_sizes=3, pool_kernel_sizes=2, mask=True, dropout_p=drop, slice=None, 
                                num_conv_per_flow=0, normalize_splat=False, X=X, **kwargs)
         self.strides = [self.unet3.enc_blocks[d].pool_stride for d in range(len(self.unet3.enc_blocks))]
@@ -113,11 +113,8 @@ class Flow_SNet(nn.Module):
 
 
 
-def flow_SNet2d(*args, slice=1, norm=True, **kwargs):
-    return Flow_SNet(slice=slice, input_channels=1, base_num_features=[16, 24, 32, 48, 64, 96, 128, 192, 256, 320], num_classes=8, num_pool=6, norm=norm, X=2)
-
-def flow_SNet3d(*args, slice=1, spacing=1, norm=True, base_num_features=[24, 32, 48, 64, 96, 128, 192], num_pool=5, **kwargs):
-    return Flow_SNet(slice=slice, spacing=spacing, input_channels=1, base_num_features=base_num_features, num_classes=8, num_pool=num_pool, norm=norm, X=3)
+def flow_SNet3d(*args, slice=1, spacing=1, norm=True, num_conv_per_flow=4, num_classes=8, base_num_features=[24, 32, 48, 64, 96, 128, 192], num_pool=5, **kwargs):
+    return Flow_SNet(slice=slice, spacing=spacing, input_channels=1, base_num_features=base_num_features, num_conv_per_flow=num_conv_per_flow, num_classes=num_classes, num_pool=num_pool, norm=norm, X=3)
 
 def flow_SNet3d0(*args, **kwargs):
     return flow_SNet3d(slice=0, spacing=2)
@@ -150,7 +147,7 @@ def flow_SNet3d2_256(*args, **kwargs):
     return flow_SNet3d(slice=2, spacing=2, base_num_features=[32, 48, 64, 96, 128, 192, 256], num_pool=4, norm=True)
 
 def flow_SNet3d0_384(*args, **kwargs):
-    return flow_SNet3d(slice=0, spacing=2, base_num_features=[48, 64, 96, 128, 192, 256, 384], num_pool=4, norm=True)
+    return flow_SNet3d(slice=0, spacing=2, base_num_features=[64, 96, 128, 192, 256, 384], num_pool=4, norm=True)
 
 def flow_SNet3d1_384(*args, **kwargs):
     return flow_SNet3d(slice=1, spacing=2, base_num_features=[48, 64, 96, 128, 192, 256, 384], num_pool=4, norm=True)
