@@ -8,7 +8,7 @@ mov_root = '../feta_2.1_mial'
 table = pd.read_csv(os.path.join(src_root, 'participants.tsv'), sep='\t')
 subs = np.array(table.participant_id)
 ages = np.int8(np.clip(np.round(np.array(table['Gestational age'])),a_min=21,a_max=None))
-recs = np.concatenate([np.repeat(np.array('mial'),[40,]),np.repeat(np.array('irtk'),[40,]),np.repeat(np.array('nmic'),[40,])])
+recs = np.concatenate([np.repeat(np.array('mial'),[40,]),np.repeat(np.array('irtk'),[40,])]) #,np.repeat(np.array('nmic'),[40,])])
 
 for i in range(len(subs)):
     src = '%s/STA%d.nii.gz' % (dst_root, ages[i])
