@@ -1,6 +1,6 @@
 <h1>Fully Convolutional Slice-to-Volume Reconstruction for Single-Stack MRI</h1>
 
-This is the official repo for the paper "Fully Convolutional Slice-to-Volume Reconstruction for Single-Stack SVR (FC-SVR). 
+This is the official repo for the CVPR 2024 paper "Fully Convolutional Slice-to-Volume Reconstruction for Single-Stack SVR (FC-SVR). 
 
 <h2>Pre-requisites</h2>
 pytorch=1.13.1</br>
