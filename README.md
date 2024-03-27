@@ -15,4 +15,4 @@ The Havard CRL fetal atlases can be downloaded from http://crl.med.harvard.edu/r
 The FeTA training and validation volumes can be downloaded from http://neuroimaging.ch/feta. Preprocess the data using preprocess/feta.py </br>
 
 <h2>Training</h2>
-Run feta3d_svr_train.sh
+Run feta3d_svr_train.sh to train the svr model on the FeTA 2.1 data. Run feta3d_inpaint_train.sh to train the interpolation model.
