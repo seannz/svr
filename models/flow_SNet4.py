@@ -18,17 +18,19 @@ class Flow_SNet(nn.Module):
                                slab_kernel_sizes=slab_kernel_sizes[slice], slab_stride_sizes=slab_stride_sizes[slice], 
                                mask=True, dropout_p=drop, slice=slice, num_conv_per_flow=num_conv_per_flow, X=X, **kwargs)
         self.unet3 = Flow_UNet(*args, conv_kernel_sizes=3, pool_kernel_sizes=2, mask=True, dropout_p=drop, slice=None, 
-                               num_conv_per_flow=0, normalize_splat=False, X=X, **kwargs)
+                               num_conv_per_flow=num_conv_per_flow, normalize_splat=False, X=X, **kwargs)
         self.strides = [self.unet3.enc_blocks[d].pool_stride for d in range(len(self.unet3.enc_blocks))]
+
+        self.unet3.flo_blocks = self.unet3.enc_blocks = None
 
     def forward(self, x):
         xs, mask = x.tensor_split(2,1) # torch.squeeze(2) #cat(x.unbind(2), 0)
         # mask = x[:,1:]
-        skips = [None] * len(self.unet3.enc_blocks)
-        masks = [mask] * len(self.unet3.enc_blocks)
-        sizes = [list(xs.shape[2:])] * len(self.unet3.enc_blocks)
+        skips = [None] * len(self.unets.enc_blocks)
+        masks = [mask] * len(self.unets.enc_blocks)
+        sizes = [list(xs.shape[2:])] * len(self.unets.enc_blocks)
 
-        for d in range(len(self.unet3.enc_blocks)):
+        for d in range(len(self.unets.enc_blocks)):
             skips[d] = xs = self.unets.enc_blocks[d](xs)
             sizes[d] = [sizes[d - 1][i] // self.strides[d][i] for i in range(len(self.strides[d]))]
             masks[d] = F.interpolate(masks[d - 1], size=skips[d].shape[2:], mode='trilinear', align_corners=True).gt(0).float()
