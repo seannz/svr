@@ -220,6 +220,7 @@ dependencies:
   - tk=8.6.12=h1ccaba5_0
   - toml=0.10.2=pyhd3eb1b0_0
   - toolz=0.12.0=py310h06a4308_0
+  - torch-distmap=0.1.0
   - torch-interpol=0.2.3
   - torchaudio=0.13.1=py310_cu116
   - torchmetrics=0.11.4=py310h2f386ee_1
