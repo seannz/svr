@@ -4,9 +4,8 @@
 This is the official repo for the CVPR 2024 paper "Fully Convolutional Slice-to-Volume Reconstruction (FC-SVR) for Single-Stack MRI" by Sean I Young, Yaël Balbastre, and others. See https://arxiv.org/abs/2312.03102.
 
 <h2>Pre-requisites</h2>
-All pre-requisite python packages are listed in pytorch_1.13.1.yml. Run `conda env create -f pytorch_1.13.1.yml`.
 
-
+All pre-requisite python packages are listed in `pytorch_1.13.1.yml`. Run `conda env create -f pytorch_1.13.1.yml`.
 
 Also, FreeSurfer version 7 is required to prepare the training dataset. See https://surfer.nmr.mgh.harvard.edu/fswiki/rel7downloads</br>
 
