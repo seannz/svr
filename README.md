@@ -6,7 +6,6 @@ This is the official repo for the CVPR 2024 paper "Fully Convolutional Slice-to-
 <h2>Pre-requisites</h2>
 
 All pre-requisite python packages are listed in `pytorch_1.13.1.yml`. Run `conda env create -f pytorch_1.13.1.yml`.
-
 Also, FreeSurfer version 7 is required to prepare the training dataset. See https://surfer.nmr.mgh.harvard.edu/fswiki/rel7downloads</br>
 
 <h2>Dataset Preparation</h2>
