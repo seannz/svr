@@ -1,9 +1,10 @@
-name: 4DCNN_env
+name: svr_env
 channels:
   - pytorch
   - conda-forge
   - nvidia
   - defaults
+  - balbasty
 dependencies:
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=5.1=1_gnu
@@ -27,6 +28,7 @@ dependencies:
   - click=8.0.4=py310h06a4308_0
   - cloudpickle=2.2.1=py310h06a4308_0
   - contourpy=1.0.5=py310hdb19cb5_0
+  - cornucopia=0.2.0
   - cryptography=39.0.1=py310h9ce1e76_2
   - cuda=11.6.1=0
   - cuda-cccl=11.6.55=hf6102b2_0
@@ -218,6 +220,7 @@ dependencies:
   - tk=8.6.12=h1ccaba5_0
   - toml=0.10.2=pyhd3eb1b0_0
   - toolz=0.12.0=py310h06a4308_0
+  - torch-interpol=0.2.3
   - torchaudio=0.13.1=py310_cu116
   - torchmetrics=0.11.4=py310h2f386ee_1
   - torchvision=0.14.1=py310_cu116
