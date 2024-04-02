@@ -10,8 +10,8 @@ Also, FreeSurfer version 7 is required to prepare the training dataset. See http
 
 <h2>Dataset Preparation</h2>
 
-The Havard CRL fetal atlases can be downloaded from http://crl.med.harvard.edu/research/fetal_brain_atlas. Preprocess the data using preprocess/crl.py </br>
-The FeTA training and validation volumes can be downloaded from https://doi.org/10.7303/syn25649159. Preprocess the data using preprocess/feta.py </br>
+The Havard CRL fetal atlases can be downloaded from http://crl.med.harvard.edu/research/fetal_brain_atlas. Preprocess the data using `preprocess/crl.py` </br>
+The FeTA training and validation volumes can be downloaded from https://doi.org/10.7303/syn25649159. Preprocess the data using `preprocess/feta.py` </br>
 
 <h2>Training</h2>
 
