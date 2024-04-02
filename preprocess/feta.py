@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import freesurfer as fs
 
 dst_root = '../CRL_FetalBrainAtlas_2017v3_lia'
 src_root = '../feta_2.1'
@@ -10,6 +11,18 @@ subs = np.array(table.participant_id)
 ages = np.int8(np.clip(np.round(np.array(table['Gestational age'])),a_min=21,a_max=None))
 recs = np.concatenate([np.repeat(np.array('mial'),[40,]),np.repeat(np.array('irtk'),[40,])]) #,np.repeat(np.array('nmic'),[40,])])
 
+# normalize (apply foreground mask to) all scans
+for i in range(len(subs)): 
+    img_file = '%s/%s/anat/%s_rec-%s_T2w.nii' % (src_root, subs[i], subs[i], recs[i])
+    seg_file = '%s/%s/anat/%s_rec-%s_dseg.nii' % (src_root, subs[i], subs[i], recs[i])
+    img = fs.Volume.read(img_file)
+    seg = fs.Volume.read(seg_file)
+
+    img.data *= (seg.data > 0)
+    img_file = '%s/%s/anat/%s_rec-%s_T2w_norm.nii' % (src_root, subs[i], subs[i], recs[i])
+    fs.Volume.write(img, img_file)
+
+# align all normalized scans to the GA-matched fetal atlas
 for i in range(len(subs)):
     src = '%s/STA%d.nii.gz' % (dst_root, ages[i])
     dst = '%s/%s/anat/%s_rec-%s_T2w_norm.nii' % (src_root, subs[i], subs[i], recs[i]) # use norm only for registration purposes
