@@ -1,7 +1,8 @@
 import os
 import glob
 import nibabel as nib
-import freesurfer as fs
+# import freesurfer as fs
+import surfa as sf
 
 
 crl_src = '../CRL_FetalBrainAtlas_2017v3' # folder to read from
@@ -14,9 +15,9 @@ for f in files:
     os.system('mri_convert %s/%s_tissue.nii.gz temp_tissue.nii -vs 0.8 0.8 0.8 -rt nearest --in_orientation LPS --out_orientation LIA' % (crl_src, f))
     os.system('mri_convert %s/%s_regional.nii.gz temp_regional.nii -vs 0.8 0.8 0.8 -rt nearest --in_orientation LPS --out_orientation LIA' % (crl_src, f))
 
-    bbox = fs.Volume.read('temp.nii').bbox()
-    fs.Volume.read('temp.nii')[bbox].fit_to_shape([256,256,256]).write('%s/%s.nii.gz' % (crl_dest, f))
-    fs.Volume.read('temp_tissue.nii')[bbox].fit_to_shape([256,256,256]).write('%s/%s_tissue.nii.gz' % (crl_dest, f))
-    fs.Volume.read('temp_regional.nii')[bbox].fit_to_shape([256,256,256]).write('%s/%s_regional.nii.gz' % (crl_dest, f))
+    bbox = sf.load_volume('temp.nii').bbox()
+    sf.load_volume('temp.nii')[bbox].fit_to_shape([256,256,256]).save('%s/%s.nii.gz' % (crl_dest, f))
+    sf.load_volume('temp_tissue.nii')[bbox].fit_to_shape([256,256,256]).save('%s/%s_tissue.nii.gz' % (crl_dest, f))
+    sf.load_volume('temp_regional.nii')[bbox].fit_to_shape([256,256,256]).save('%s/%s_regional.nii.gz' % (crl_dest, f))
 
     os.system('rm temp*.nii')

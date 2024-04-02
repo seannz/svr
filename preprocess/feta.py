@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-import freesurfer as fs
+import surfa as sf
 
 dst_root = '../CRL_FetalBrainAtlas_2017v3_lia'
 src_root = '../feta_2.1'
@@ -15,12 +15,12 @@ recs = np.concatenate([np.repeat(np.array('mial'),[40,]),np.repeat(np.array('irt
 for i in range(len(subs)): 
     img_file = '%s/%s/anat/%s_rec-%s_T2w.nii' % (src_root, subs[i], subs[i], recs[i])
     seg_file = '%s/%s/anat/%s_rec-%s_dseg.nii' % (src_root, subs[i], subs[i], recs[i])
-    img = fs.Volume.read(img_file)
-    seg = fs.Volume.read(seg_file)
+    img = sf.load_volume(img_file)
+    seg = sf.load_volume(seg_file)
 
     img.data *= (seg.data > 0)
     img_file = '%s/%s/anat/%s_rec-%s_T2w_norm.nii' % (src_root, subs[i], subs[i], recs[i])
-    fs.Volume.write(img, img_file)
+    img.save(img_file)
 
 # align all normalized scans to the GA-matched fetal atlas
 for i in range(len(subs)):
