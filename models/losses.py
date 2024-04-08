@@ -57,3 +57,10 @@ def l21_loss_affine_invariant(out, tar, masked=True, eps=0e-4, reduction='mean',
     X = torch.linalg.svd(torch.linalg.lstsq(A, B).solution.detach())
 
     return torch.mean(torch.sqrt(torch.sum((B - A @ (X.U @ X.S.sign().diag_embed() @ X.Vh)) ** 2, 2)))
+
+def l2_loss(outputs, targets, weights=1, kernel_size=1, reduction='mean', **kwargs):
+    weights = torch.as_tensor(weights, device=outputs.device)
+
+    # return torch.mean(weights * (outputs - F.avg_pool2d(targets, kernel_size=kernel_size, padding=kernel_size//2, stride=1)) ** 2)
+    return torch.mean(weights * (outputs - targets) ** 2) #F.avg_pool2d(targets, kernel_size=kernel_size, padding=kernel_size//2, stride=1)) ** 2)
+
