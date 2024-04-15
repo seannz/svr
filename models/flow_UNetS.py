@@ -47,72 +47,72 @@ class ConvTransposeBlock(nn.Module):
         # return self.drop(self.conv(self.relu(self.norm(x))))
         return self.relu(self.norm(self.drop(self.conv(x))))
 
-# class SlabbedConvLayers(nn.Module):
-#     def __init__(self, in_channels, out_channels, num_convs, slab_kernel_sizes=3, conv_kernel_sizes=3,
-#                  slab_stride_sizes=1, conv_stride_sizes=1, pool_stride=1, slice=None, mask=False, bias=True, norm=True, drop=0.0, relu=True, X=3):
-#         super().__init__()
-#         self.input_channels = in_channels
-#         self.output_channels = out_channels + mask
-#         self.slab_stride_sizes = slab_stride_sizes if isinstance(slab_stride_sizes, (list, tuple)) else [slab_stride_sizes] * X
-#         self.pool_stride = pool_stride if isinstance(pool_stride, (list, tuple)) else [pool_stride] * X
-
-#         self.blocks = []
-#         for i in range(max(0, num_convs - 1)):
-#             stride = slab_stride_sizes if i == 0 else conv_stride_sizes
-#             kernel = slab_kernel_sizes if i == 0 else conv_kernel_sizes
-#             in_channels = self.input_channels #if i == 0 else self.output_channels
-#             out_channels = self.input_channels # self.spacing * self.output_channels if i == num_convs - 1 else self.input_channels
-#             self.blocks.append(ConvBlock(in_channels, out_channels, kernel_size=kernel, stride=stride, bias=bias, norm=norm, drop=drop, relu=relu, X=X))
-
-#         for i in range(max(0, num_convs - 1), num_convs):
-#             stride = slab_stride_sizes
-#             kernel = slab_kernel_sizes
-#             in_channels = self.input_channels # if i == 0 else self.output_channels
-#             out_channels = self.output_channels # if i == num_convs - 1 else self.input_channels
-#             self.blocks.append(ConvTransposeBlock(in_channels, out_channels, kernel_size=kernel, stride=stride, bias=bias, norm=norm, drop=drop, relu=False, X=X))
-
-#         self.blocks = nn.Sequential(*self.blocks)
-
-#     def forward(self, x):
-#         for i in range(len(self.blocks)):
-#             x = self.blocks[i](torch.cat([x], 1))
-
-#         return torch.cat([x[:,:3], x[:,3:].sigmoid()], 1)
-
 class SlabbedConvLayers(nn.Module):
     def __init__(self, in_channels, out_channels, num_convs, slab_kernel_sizes=3, conv_kernel_sizes=3,
                  slab_stride_sizes=1, conv_stride_sizes=1, pool_stride=1, slice=None, mask=False, bias=True, norm=True, drop=0.0, relu=True, X=3):
         super().__init__()
-        self.mode = 'bilinear' if X == 2 else 'trilinear' if X == 3 else 'nearest'
         self.input_channels = in_channels
         self.output_channels = out_channels + mask
         self.slab_stride_sizes = slab_stride_sizes if isinstance(slab_stride_sizes, (list, tuple)) else [slab_stride_sizes] * X
         self.pool_stride = pool_stride if isinstance(pool_stride, (list, tuple)) else [pool_stride] * X
-        self.slice = slice
-        self.spacing = self.slab_stride_sizes[slice] if slice is not None else 1
 
         self.blocks = []
-        for i in range(num_convs):
+        for i in range(max(0, num_convs - 1)):
             stride = slab_stride_sizes if i == 0 else conv_stride_sizes
             kernel = slab_kernel_sizes if i == 0 else conv_kernel_sizes
             in_channels = self.input_channels #if i == 0 else self.output_channels
-            out_channels = self.spacing * self.output_channels if i == num_convs - 1 else self.input_channels
-            relu = False if i == num_convs - 1 else relu
+            out_channels = self.input_channels # self.spacing * self.output_channels if i == num_convs - 1 else self.input_channels
             self.blocks.append(ConvBlock(in_channels, out_channels, kernel_size=kernel, stride=stride, bias=bias, norm=norm, drop=drop, relu=relu, X=X))
+
+        for i in range(max(0, num_convs - 1), num_convs):
+            stride = slab_stride_sizes
+            kernel = slab_kernel_sizes
+            in_channels = self.input_channels # if i == 0 else self.output_channels
+            out_channels = self.output_channels # if i == num_convs - 1 else self.input_channels
+            self.blocks.append(ConvTransposeBlock(in_channels, out_channels, kernel_size=kernel, stride=stride, bias=bias, norm=norm, drop=drop, relu=False, X=X))
+
         self.blocks = nn.Sequential(*self.blocks)
 
     def forward(self, x):
-        # size = [x.shape[d] // self.pool_stride[d - 2] for d in range(2, x.ndim)]
         for i in range(len(self.blocks)):
-            # x = F.interpolate(x, size=size, mode=self.mode, align_corners=True) if i == 0 else x
             x = self.blocks[i](torch.cat([x], 1))
 
-        if self.slice is not None:
-            x = x.movedim(self.slice + 2, -1).movedim(1, -1).unflatten(-1, (self.spacing, -1))
-            x = x.flatten(-3, -2).movedim(-1, 1).movedim(-1, self.slice + 2)
-
         return torch.cat([x[:,:3], x[:,3:].sigmoid()], 1)
-        # return x[:,:3].sin(), x[:,3:].sin() ** 2], 1)
+
+# class SlabbedConvLayers(nn.Module):
+#     def __init__(self, in_channels, out_channels, num_convs, slab_kernel_sizes=3, conv_kernel_sizes=3,
+#                  slab_stride_sizes=1, conv_stride_sizes=1, pool_stride=1, slice=None, mask=False, bias=True, norm=True, drop=0.0, relu=True, X=3):
+#         super().__init__()
+#         self.mode = 'bilinear' if X == 2 else 'trilinear' if X == 3 else 'nearest'
+#         self.input_channels = in_channels
+#         self.output_channels = out_channels + mask
+#         self.slab_stride_sizes = slab_stride_sizes if isinstance(slab_stride_sizes, (list, tuple)) else [slab_stride_sizes] * X
+#         self.pool_stride = pool_stride if isinstance(pool_stride, (list, tuple)) else [pool_stride] * X
+#         self.slice = slice
+#         self.spacing = self.slab_stride_sizes[slice] if slice is not None else 1
+
+#         self.blocks = []
+#         for i in range(num_convs):
+#             stride = slab_stride_sizes if i == 0 else conv_stride_sizes
+#             kernel = slab_kernel_sizes if i == 0 else conv_kernel_sizes
+#             in_channels = self.input_channels #if i == 0 else self.output_channels
+#             out_channels = self.spacing * self.output_channels if i == num_convs - 1 else self.input_channels
+#             relu = False if i == num_convs - 1 else relu
+#             self.blocks.append(ConvBlock(in_channels, out_channels, kernel_size=kernel, stride=stride, bias=bias, norm=norm, drop=drop, relu=relu, X=X))
+#         self.blocks = nn.Sequential(*self.blocks)
+
+#     def forward(self, x):
+#         # size = [x.shape[d] // self.pool_stride[d - 2] for d in range(2, x.ndim)]
+#         for i in range(len(self.blocks)):
+#             # x = F.interpolate(x, size=size, mode=self.mode, align_corners=True) if i == 0 else x
+#             x = self.blocks[i](torch.cat([x], 1))
+
+#         if self.slice is not None:
+#             x = x.movedim(self.slice + 2, -1).movedim(1, -1).unflatten(-1, (self.spacing, -1))
+#             x = x.flatten(-3, -2).movedim(-1, 1).movedim(-1, self.slice + 2)
+
+#         return torch.cat([x[:,:3], x[:,3:].sigmoid()], 1)
+#         # return x[:,:3].sin(), x[:,3:].sin() ** 2], 1)
 
 class StackedConvLayers(nn.Module):
     def __init__(self, in_channels, out_channels, num_convs, kernel_size=3, pool_stride=1, bias=True, norm=True, drop=0.0, relu=True, skip=False, X=3):
@@ -184,7 +184,7 @@ class WarpingLayer(nn.Module):
         flow = F.interpolate(flow, size=x.shape[2:], mode=self.mode, align_corners=True) if flow.shape[2:] != x.shape[2:] else flow
         grid = [torch.arange(0, x.shape[d], dtype=torch.float, device=x.device) for d in range(2, x.ndim)]
         grid = self.warp * flow + torch.stack(torch.meshgrid(grid, indexing='ij'), 0)
-        shape = shape if shape is not None else list(x.shape[2:])
+        # shape = shape if shape is not None else list(x.shape[2:])
 
         if not self.transpose:
             grid = 2.0 / (torch.tensor(grid.shape[2:], device=x.device).reshape([1,-1] + [1] * (grid.ndim - 2)) - 1) * grid - 1.0
