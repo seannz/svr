@@ -108,7 +108,7 @@ class RandAffine3dSliceSplat:
         # img0 = self.mult(img0) if self.noise else img0
         flow = torch.cat([xform[i].flow for i in range(numstacks)], 1) # 
         # img0, flow = self.bound(torch.cat([img0, seg0]), torch.cat([flow, seg0]), mask=seg0)
-        img0, flow = torch.cat([img0, seg0]), torch.cat([flow, seg0])
+        img0, flow = torch.cat([img0]), torch.cat([flow])
         grid = [torch.arange(0, img0.shape[d], dtype=torch.float, device=img0.device) for d in range(1, img0.ndim)]
         warp = torch.movedim(flow[:3] + torch.stack(torch.meshgrid(grid, indexing='ij'), 0), 0, -1)
 

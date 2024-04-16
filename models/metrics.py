@@ -28,3 +28,6 @@ class MeanL22LossInvariant(LossMetric):
     def __init__(self, **kwargs):
         super().__init__(loss_func=l22_loss_affine_invariant, loss_kwargs={'masked':True, 'eps':0})
 
+class MeanL2Loss(LossMetric):
+    def __init__(self, **kwargs):
+        super().__init__(loss_func=l2_loss, loss_kwargs={'masked':True})
