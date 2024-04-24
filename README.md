@@ -19,7 +19,7 @@ Run `feta3d_svr_train.sh` to train the svr model on the FeTA 2.1 data. Run `feta
 
 <h2>Pretrained Weights</h2>
 
-These are coming soon!  In the mean time, please email me at `siyoung` at `mit` dot `edu` for the pretrained weights of the motion estimation or interpolation networks.
+The pretrained weights for motion estimation and interpolation networks will be posted here soon!  In the mean time, I can send them to you if you email me at `siyoung` at `mit` dot `edu` 
 
 <h2>Work with me!</h2>
 
