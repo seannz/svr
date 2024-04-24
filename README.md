@@ -23,4 +23,4 @@ The pretrained weights for motion estimation and interpolation networks will be 
 
 <h2>Work with us!</h2>
 
-Feel free to reach out to me via e-mail and say hello if you have ideas for interesting extensions, applications or simply just want to chat!
+Feel free to reach out to me via e-mail and say hello if you have interesting ideas for  extensions, applications or if you simply just want to chat!
