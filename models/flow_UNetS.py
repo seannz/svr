@@ -184,7 +184,7 @@ class WarpingLayer(nn.Module):
         flow = F.interpolate(flow, size=x.shape[2:], mode=self.mode, align_corners=True) if flow.shape[2:] != x.shape[2:] else flow
         grid = [torch.arange(0, x.shape[d], dtype=torch.float, device=x.device) for d in range(2, x.ndim)]
         grid = self.warp * flow + torch.stack(torch.meshgrid(grid, indexing='ij'), 0)
-        # shape = shape if shape is not None else list(x.shape[2:])
+        shape = shape if shape is not None else list(x.shape[2:])
 
         if not self.transpose:
             grid = 2.0 / (torch.tensor(grid.shape[2:], device=x.device).reshape([1,-1] + [1] * (grid.ndim - 2)) - 1) * grid - 1.0
