@@ -5,7 +5,6 @@
 
 <img width="1000" alt="Screenshot 2024-06-18 at 9 59 33 AM" src="https://github.com/seannz/svr/assets/1659747/ed3a7684-15db-4975-8ff7-53dd6b8eaaf1"></h1>
 
-
 This is the official repo for the CVPR 2024 paper "Fully Convolutional Slice-to-Volume Reconstruction (FC-SVR) for Single-Stack MRI" by [Sean I Young](https://seaniyoung.com), Yaël Balbastre, Bruce Fischl and others.
 
 <h2>Pre-requisites</h2>
