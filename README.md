@@ -1,4 +1,4 @@
-<h1>[CVPR2024] Fully convolutional slice-to-volume reconstruction for single-stack MRI
+<img width="964" alt="Screenshot 2024-06-18 at 9 47 33 AM" src="https://github.com/seannz/svr/assets/1659747/44294875-adf6-42cf-9cde-b88fcd48dc03"><h1>[CVPR2024] Fully convolutional slice-to-volume reconstruction for single-stack MRI
 
 [![arXiv](https://img.shields.io/badge/arXiv-2312.03102-b31b1b.svg)](https://arxiv.org/abs/2312.03102)
 [![License:MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -23,7 +23,8 @@ The FeTA training and validation volumes can be downloaded from https://doi.org/
 Run `feta3d_svr_train.sh` to train the svr model on the FeTA 2.1 data. Run `feta3d_inpaint_train.sh` to train the interpolation model.
 
 <h2>Inference</h2>
-<img width="1000" alt="Screenshot 2024-06-18 at 9 26 23 AM" src="https://github.com/seannz/svr/assets/1659747/28b54ac4-5143-46da-ac33-aaf28a3385c4">
+<img width="1000" alt="Screenshot 2024-06-18 at 9 47 33 AM" src="https://github.com/seannz/svr/assets/1659747/8608a370-2348-42fc-b42a-f4f47c70127d">
+
 
 <h2>Pretrained Weights</h2>
 
