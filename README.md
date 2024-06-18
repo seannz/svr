@@ -3,8 +3,8 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2312.03102-b31b1b.svg)](https://arxiv.org/abs/2312.03102)
 [![License:MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+<img width="1000" alt="Screenshot 2024-06-18 at 9 25 24 AM" src="https://github.com/seannz/svr/assets/1659747/139a8a80-1c90-4617-af56-9f7aaf449aad"></h1>
 
-<img width="1000" alt="Screenshot 2024-06-18 at 9 25 24 AM" src="https://github.com/seannz/svr/assets/1659747/a244775f-9a51-4405-852c-cc9f7b43fe72"></h1>
 
 This is the official repo for the CVPR 2024 paper "Fully Convolutional Slice-to-Volume Reconstruction (FC-SVR) for Single-Stack MRI" by [Sean I Young](https://seaniyoung.com), Yaël Balbastre, Bruce Fischl and others.
 
