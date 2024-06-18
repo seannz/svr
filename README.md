@@ -1,6 +1,8 @@
 <h1>[CVPR2024] Fully convolutional slice-to-volume reconstruction for single-stack MRI
 
 [![arXiv](https://img.shields.io/badge/arXiv-2312.03102-b31b1b.svg)](https://arxiv.org/abs/2312.03102)
+[![License:MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 
 <img width="980" alt="Screenshot 2024-03-26 at 8 30 18 PM" src="https://github.com/seannz/svr/assets/1659747/233b3f47-d10a-4e2d-ae6b-56c8bdb939a4"></h1>
 
