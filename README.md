@@ -22,6 +22,9 @@ The FeTA training and validation volumes can be downloaded from https://doi.org/
 Run `feta3d_svr_train.sh` to train the svr model on the FeTA 2.1 data. Run `feta3d_inpaint_train.sh` to train the interpolation model.
 
 <h2>Inference</h2>
+
+<img width="1000" alt="Screenshot 2024-06-18 at 10 17 53 AM" src="https://github.com/seannz/svr/assets/1659747/9c8e5d50-9793-4fc3-86ec-3ffbf6d5c64d">
+
 <img width="1000" alt="Screenshot 2024-06-18 at 10 04 07 AM" src="https://github.com/seannz/svr/assets/1659747/1a42eabd-9ccf-42cc-8e68-8b71536bba5a">
 
 <h2>Pretrained Weights</h2>
