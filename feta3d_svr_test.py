@@ -8,7 +8,7 @@ from datasets.transforms import BoundingBox3d
 from pytorch_lightning import seed_everything
 
 
-ckpt_path_motion = 'checkpoints/feta3d0_4_svr_flow_SNet3d0_1024_l22_loss_affine_invariant_bulktrans0_bulkrot180_trans10_rot20_250k/last.ckpt'
+ckpt_path_motion = 'checkpoints/feta3d0_4_svr_flow_SNet3d0_1024_l22_loss_affine_invariant_bulktrans0_bulkrot180_trans10_rot20_300k/last.ckpt'
 ckpt_path_interp = 'checkpoints/feta3d_4_inpaint_unet3d_320_l2_loss_250k_192/last.ckpt'
 
 imgnum = 4
@@ -16,7 +16,7 @@ imgnum = 4
 torch.set_grad_enabled(False)
 seed_everything(2, workers=True)
 
-trainee = models.segment(model=models.flow_SNet3d0_512())
+trainee = models.segment(model=models.flow_SNet3d0_1024())
 trainee.load_state_dict(torch.load(ckpt_path_motion)['state_dict'])
 motion_model = trainee.model.cuda()
     
